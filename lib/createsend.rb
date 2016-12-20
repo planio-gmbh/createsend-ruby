@@ -62,10 +62,17 @@ module CreateSend
       # The createsend API returns an ID as a string when a 201 Created
       # response is returned. Unfortunately this is invalid json.
       def parse
+        retried = false
         begin
           super
         rescue MultiJson::DecodeError => e
           body[1..-2] # Strip surrounding quotes and return as is.
+        rescue JSON::ParserError => e
+          raise e if retried
+          retried = true
+          body.force_encoding('utf-8')
+          body.sub!(/^\xEF\xBB\xBF/, '')
+          retry
         end
       end
     end
