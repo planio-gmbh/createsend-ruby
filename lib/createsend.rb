@@ -53,6 +53,16 @@ module CreateSend
   # Raised for HTTP response code of 404
   class NotFound < ClientError; end
 
+  # Raised for HTTP response code of 429
+  class RateLimitExceeded < CreateSendError
+    # number of seconds before the limit is reset
+    attr_reader :ratelimit_reset
+    def initialize(response)
+      super Hashie::Mash.new response
+      @ratelimit_reset = response.headers["X-RateLimit-Reset"]
+    end
+  end
+
   # Provides high level CreateSend functionality/data you'll probably need.
   class CreateSend
     include HTTParty
@@ -163,6 +173,8 @@ module CreateSend
         raise Unauthorized.new(Hashie::Mash.new response)
       when 404
         raise NotFound.new
+      when 429
+        raise RateLimitExceeded.new(response)
       when 400...500
         raise ClientError.new
       when 500...600
