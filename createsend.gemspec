@@ -1,7 +1,4 @@
-require 'bundler'
-require 'bundler/version'
-
-require File.expand_path('lib/createsend/version')
+require_relative 'lib/createsend/version'
 
 Gem::Specification.new do |s|
   s.add_runtime_dependency 'json', '>= 1.0'
