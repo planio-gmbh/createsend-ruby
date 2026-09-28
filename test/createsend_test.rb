@@ -315,6 +315,15 @@ class CreateSendTest < Test::Unit::TestCase
           end
         end
       end
+
+      context "429, with a rate limit reset header" do
+        should "expose the seconds until the rate limit resets" do
+          stub_get(@auth, "countries.json", nil, ["429", "Too many requests"],
+            "X-RateLimit-Reset" => "3000")
+          e = assert_raises(CreateSend::TooManyRequests) { @cs.countries }
+          e.ratelimit_reset.should be == "3000"
+        end
+      end
     end
 
   end

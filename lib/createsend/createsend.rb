@@ -31,7 +31,15 @@ module CreateSend
   # Raised for HTTP response code of 404
   class NotFound < ClientError; end
   # Raised for HTTP response code of 429
-  class TooManyRequests < ClientError; end
+  class TooManyRequests < ClientError
+    # Number of seconds until the rate limit resets, as given by the
+    # X-RateLimit-Reset response header
+    attr_reader :ratelimit_reset
+    def initialize(ratelimit_reset = nil)
+      @ratelimit_reset = ratelimit_reset
+      super()
+    end
+  end
 
   # Raised for HTTP response code of 401, specifically when an OAuth token
   # in invalid (Code: 120, Message: 'Invalid OAuth Token')
@@ -282,7 +290,7 @@ module CreateSend
       when 404
         raise NotFound.new
       when 429
-        raise TooManyRequests.new
+        raise TooManyRequests.new(response.headers["X-RateLimit-Reset"])
       when 400...500
         raise ClientError.new
       when 500...600
