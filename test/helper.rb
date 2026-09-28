@@ -12,6 +12,13 @@ require 'pathname'
 
 require 'shoulda/context'
 require 'matchy'
+
+# fakeweb 1.3.0 still calls File.exists?, which was removed in Ruby 3.2
+unless File.respond_to?(:exists?)
+  class << File
+    alias_method :exists?, :exist?
+  end
+end
 require 'fakeweb'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
